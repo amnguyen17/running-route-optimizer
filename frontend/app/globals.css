@@ -1,0 +1,66 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+
+:root {
+  /* Color tokens: "trailhead instrument panel" direction -- a cool paper
+     background (not the cliché warm cream), deep pine ink, a trail-blaze
+     amber accent for primary actions/data, moss for secondary/success
+     states, and a clay-red reserved for difficulty/warning signals only. */
+  --color-paper: #f2f4f1;
+  --color-paper-raised: #ffffff;
+  --color-ink: #1c2620;
+  --color-ink-soft: #52605a;
+  --color-line: #d7ddd4;
+  --color-amber: #d98e2b;
+  --color-amber-soft: #f2dcb3;
+  --color-moss: #3f6b52;
+  --color-moss-soft: #cfe3d6;
+  --color-clay: #b8492f;
+  --color-clay-soft: #f3d9d0;
+
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-display);
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+}
+
+::selection {
+  background: var(--color-amber-soft);
+}
+
+/* Visible keyboard focus, respected throughout */
+:focus-visible {
+  outline: 2px solid var(--color-amber);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,125 @@
+.panel {
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+  margin: 0;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 2px 0 0 0;
+  letter-spacing: -0.01em;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--color-ink-soft);
+}
+
+.input {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+.input:focus {
+  border-color: var(--color-amber);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.segmented {
+  display: flex;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.segmentedOption {
+  flex: 1;
+  padding: 9px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  background: var(--color-paper);
+  color: var(--color-ink-soft);
+  border: none;
+  border-right: 1px solid var(--color-line);
+}
+
+.segmentedOption:last-child {
+  border-right: none;
+}
+
+.segmentedOptionActive {
+  background: var(--color-moss-soft);
+  color: var(--color-moss);
+}
+
+.submit {
+  margin-top: 4px;
+  padding: 13px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-amber);
+  color: #241505;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: filter 0.12s ease;
+}
+
+.submit:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.submit:disabled {
+  background: var(--color-line);
+  color: var(--color-ink-soft);
+  cursor: not-allowed;
+}
+
+.errorBox {
+  background: var(--color-clay-soft);
+  border: 1px solid var(--color-clay);
+  color: #6b2a19;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  line-height: 1.5;
+}
