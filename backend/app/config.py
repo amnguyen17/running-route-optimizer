@@ -101,9 +101,15 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------
     # Running time estimate
     # ------------------------------------------------------------------
-    # Configurable *default* pace assumption (minutes per mile) used for
-    # ALL users. This is explicitly not personalized; see README.
+    # Fallback pace (minutes per mile) used only when a request doesn't
+    # supply RouteRequest.pace_min_per_mile. When it is supplied, the
+    # estimate is personalized to that pace instead.
     default_pace_min_per_mile: float = 10.0
+    # Reasonable bounds for a user-supplied pace, used to reject clearly
+    # invalid input (zero, negative, or an implausible value) with a
+    # clear validation error instead of producing a nonsensical estimate.
+    min_pace_min_per_mile: float = 3.0
+    max_pace_min_per_mile: float = 60.0
     # Extra minutes added per 100 ft of elevation gain to account for
     # the runner slowing down on climbs (simple linear model).
     elevation_time_penalty_min_per_100ft: float = 1.0

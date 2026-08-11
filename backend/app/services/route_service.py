@@ -80,6 +80,7 @@ def generate_route(request: RouteRequest) -> GeneratedRoute:
             max_elevation_gain_ft=max_elevation_gain_ft,
             route_type=request.route_type,
             algorithm_name=request.algorithm.value,
+            pace_min_per_mile=request.pace_min_per_mile,
         )
     except NoValidRouteError as exc:
         raise RouteGenerationError(str(exc)) from exc

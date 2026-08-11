@@ -1,8 +1,9 @@
-"""Covers the route_service orchestration layer's handling of elevation
-availability: elevation.py raises ElevationUnavailableError when the API
-can't be reached, and route generation must still succeed -- just with
+"""Covers route_service orchestration behavior that spans multiple
+layers: elevation.py raises ElevationUnavailableError when the API can't
+be reached, and route generation must still succeed -- just with
 elevation_available=False and zeroed elevation stats -- rather than
-failing the whole request."""
+failing the whole request. Also covers that a request's pace_min_per_mile
+actually reaches the final estimated_time_minutes end to end."""
 from __future__ import annotations
 
 import networkx as nx
@@ -93,3 +94,27 @@ def test_generate_route_reports_elevation_available_on_success(monkeypatch):
     result = route_service_module.generate_route(_make_request())
 
     assert result.elevation_available is True
+
+
+def test_generate_route_personalizes_estimated_time_to_requested_pace(monkeypatch):
+    graph = _grid_graph(elevation_m=0.0)  # flat, so no elevation time penalty to account for
+    monkeypatch.setattr(route_service_module, "get_or_download_graph", lambda lat, lon, radius: graph)
+
+    fast = route_service_module.generate_route(_make_request(pace_min_per_mile=6.0))
+    slow = route_service_module.generate_route(_make_request(pace_min_per_mile=15.0))
+
+    assert slow.estimated_time_minutes > fast.estimated_time_minutes
+    assert abs(fast.estimated_time_minutes - fast.distance_miles * 6.0) < 0.1
+    assert abs(slow.estimated_time_minutes - slow.distance_miles * 15.0) < 0.1
+
+
+def test_generate_route_falls_back_to_default_pace_when_unspecified(monkeypatch):
+    from app.config import get_settings
+
+    graph = _grid_graph(elevation_m=0.0)
+    monkeypatch.setattr(route_service_module, "get_or_download_graph", lambda lat, lon, radius: graph)
+
+    result = route_service_module.generate_route(_make_request())  # no pace_min_per_mile
+
+    settings = get_settings()
+    assert abs(result.estimated_time_minutes - result.distance_miles * settings.default_pace_min_per_mile) < 0.1

@@ -68,6 +68,7 @@ def generate_best_route(
     max_elevation_gain_ft: float,
     route_type: RouteType,
     algorithm_name: str,
+    pace_min_per_mile: float | None = None,
 ) -> RouteCandidate:
     algorithm = ALGORITHMS[algorithm_name]
     start_node = nearest_node(graph, start_latitude, start_longitude)
@@ -94,7 +95,7 @@ def generate_best_route(
             continue
 
         node_path, loop_closure_distance_m = candidate
-        stats = compute_route_stats(graph, node_path)
+        stats = compute_route_stats(graph, node_path, pace_min_per_mile=pace_min_per_mile)
 
         breakdown = score_candidate(
             actual_distance_miles=stats.distance_miles,

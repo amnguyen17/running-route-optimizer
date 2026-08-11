@@ -3,9 +3,10 @@ import styles from "./StatsReadout.module.css";
 
 interface Props {
   route: GeneratedRoute | null;
+  paceMinPerMile: number;
 }
 
-export default function StatsReadout({ route }: Props) {
+export default function StatsReadout({ route, paceMinPerMile }: Props) {
   if (!route) {
     return (
       <div className={styles.emptyState}>
@@ -27,7 +28,11 @@ export default function StatsReadout({ route }: Props) {
       <Stat label="Distance" value={route.distance_miles.toFixed(2)} unit="mi" />
       <Stat label="Elevation gain" value={Math.round(route.elevation_gain_ft)} unit="ft" />
       <Stat label="Elevation loss" value={Math.round(route.elevation_loss_ft)} unit="ft" />
-      <Stat label="Est. time" value={time} unit="" />
+      <div className={styles.stat}>
+        <span className={styles.statLabel}>Est. time</span>
+        <span className={styles.statValue}>{time}</span>
+        <span className={styles.statNote}>Based on your pace: {formatMinutes(paceMinPerMile)} min/mile</span>
+      </div>
       <Stat label="Algorithm" value={route.algorithm === "astar" ? "A*" : "Dijkstra"} unit="" />
       <Stat label="Score" value={route.score.toFixed(3)} unit="" />
       <div className={styles.stat}>

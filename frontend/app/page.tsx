@@ -21,6 +21,8 @@ export default function Home() {
   const [route, setRoute] = useState<GeneratedRoute | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [startPoint, setStartPoint] = useState<[number, number]>(DEFAULT_CENTER);
+  const [paceUsed, setPaceUsed] = useState(10);
 
   async function handleSubmit(request: RouteRequest) {
     setIsLoading(true);
@@ -28,6 +30,7 @@ export default function Home() {
     try {
       const result = await generateRoute(request);
       setRoute(result);
+      setPaceUsed(request.pace_min_per_mile);
     } catch (err) {
       if (err instanceof ApiRequestError) {
         setErrorMessage(err.message);
@@ -37,6 +40,10 @@ export default function Home() {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  function handleSelectStart(lat: number, lon: number) {
+    setStartPoint([lat, lon]);
   }
 
   return (
@@ -52,12 +59,23 @@ export default function Home() {
       </header>
 
       <main className={styles.main}>
-        <InputPanel onSubmit={handleSubmit} isLoading={isLoading} errorMessage={errorMessage} />
+        <InputPanel
+          onSubmit={handleSubmit}
+          isLoading={isLoading}
+          errorMessage={errorMessage}
+          selectedLatitude={startPoint[0]}
+          selectedLongitude={startPoint[1]}
+        />
 
         <div className={styles.mapColumn}>
-          <StatsReadout route={route} />
+          <StatsReadout route={route} paceMinPerMile={paceUsed} />
           <div className={styles.mapArea}>
-            <RouteMap route={route} fallbackCenter={DEFAULT_CENTER} />
+            <RouteMap
+              route={route}
+              fallbackCenter={DEFAULT_CENTER}
+              selectedStart={startPoint}
+              onSelectStart={handleSelectStart}
+            />
           </div>
         </div>
       </main>

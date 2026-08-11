@@ -7,6 +7,7 @@ export interface RouteRequest {
   target_distance_miles: number;
   desired_elevation_gain_ft: number;
   max_elevation_gain_ft?: number;
+  pace_min_per_mile: number;
   route_type: RouteType;
   algorithm: Algorithm;
 }

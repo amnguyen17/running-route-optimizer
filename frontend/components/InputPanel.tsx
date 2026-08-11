@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Algorithm, RouteRequest, RouteType } from "@/types/route";
 import styles from "./InputPanel.module.css";
 
@@ -8,13 +8,34 @@ interface Props {
   onSubmit: (request: RouteRequest) => void;
   isLoading: boolean;
   errorMessage: string | null;
+  selectedLatitude: number;
+  selectedLongitude: number;
 }
 
-export default function InputPanel({ onSubmit, isLoading, errorMessage }: Props) {
-  const [latitude, setLatitude] = useState("37.2296");
-  const [longitude, setLongitude] = useState("-80.4139");
+export default function InputPanel({
+  onSubmit,
+  isLoading,
+  errorMessage,
+  selectedLatitude,
+  selectedLongitude,
+}: Props) {
+  const [latitude, setLatitude] = useState(selectedLatitude.toFixed(5));
+  const [longitude, setLongitude] = useState(selectedLongitude.toFixed(5));
+
+  // Clicking the map (see RouteMap) updates selectedLatitude/Longitude in
+  // the parent; mirror that into these text fields without fighting the
+  // user's own typing (this effect only fires when the *props* change).
+  useEffect(() => {
+    setLatitude(selectedLatitude.toFixed(5));
+  }, [selectedLatitude]);
+
+  useEffect(() => {
+    setLongitude(selectedLongitude.toFixed(5));
+  }, [selectedLongitude]);
+
   const [targetDistance, setTargetDistance] = useState("5");
   const [elevationGain, setElevationGain] = useState("300");
+  const [pace, setPace] = useState("10");
   const [routeType, setRouteType] = useState<RouteType>("loop");
   const [algorithm, setAlgorithm] = useState<Algorithm>("astar");
 
@@ -25,6 +46,7 @@ export default function InputPanel({ onSubmit, isLoading, errorMessage }: Props)
       longitude: parseFloat(longitude),
       target_distance_miles: parseFloat(targetDistance),
       desired_elevation_gain_ft: parseFloat(elevationGain),
+      pace_min_per_mile: parseFloat(pace),
       route_type: routeType,
       algorithm,
     });
@@ -36,6 +58,8 @@ export default function InputPanel({ onSubmit, isLoading, errorMessage }: Props)
         <p className={styles.eyebrow}>Route parameters</p>
         <h1 className={styles.title}>Plan a run</h1>
       </div>
+
+      <span className={styles.hint}>Click anywhere on the map to set your start point.</span>
 
       <div className={styles.row}>
         <div className={styles.field}>
@@ -101,6 +125,24 @@ export default function InputPanel({ onSubmit, isLoading, errorMessage }: Props)
           onChange={(e) => setElevationGain(e.target.value)}
           required
         />
+      </div>
+
+      <div className={styles.field}>
+        <label className={styles.label} htmlFor="pace">
+          Your pace (min/mile)
+        </label>
+        <input
+          id="pace"
+          className={styles.input}
+          type="number"
+          min="3"
+          max="60"
+          step="0.5"
+          value={pace}
+          onChange={(e) => setPace(e.target.value)}
+          required
+        />
+        <span className={styles.hint}>Used to personalize the time estimate (default: 10 min/mile).</span>
       </div>
 
       <div className={styles.field}>

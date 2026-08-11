@@ -115,6 +115,43 @@ def test_generate_route_distance_too_large_returns_422(client):
     assert resp.status_code == 422
 
 
+def test_generate_route_zero_pace_returns_422(client):
+    payload = dict(VALID_PAYLOAD, pace_min_per_mile=0)
+    resp = client.post("/api/routes/generate", json=payload)
+    assert resp.status_code == 422
+
+
+def test_generate_route_negative_pace_returns_422(client):
+    payload = dict(VALID_PAYLOAD, pace_min_per_mile=-5)
+    resp = client.post("/api/routes/generate", json=payload)
+    assert resp.status_code == 422
+
+
+def test_generate_route_unreasonably_slow_pace_returns_422(client):
+    payload = dict(VALID_PAYLOAD, pace_min_per_mile=500)
+    resp = client.post("/api/routes/generate", json=payload)
+    assert resp.status_code == 422
+
+
+def test_generate_route_accepts_custom_pace(client, monkeypatch):
+    import app.api.routes as routes_module
+
+    monkeypatch.setattr(routes_module, "generate_route", lambda req: _fake_generated_route())
+
+    payload = dict(VALID_PAYLOAD, pace_min_per_mile=8.5)
+    resp = client.post("/api/routes/generate", json=payload)
+    assert resp.status_code == 200
+
+
+def test_generate_route_omitted_pace_still_succeeds(client, monkeypatch):
+    import app.api.routes as routes_module
+
+    monkeypatch.setattr(routes_module, "generate_route", lambda req: _fake_generated_route())
+
+    resp = client.post("/api/routes/generate", json=VALID_PAYLOAD)  # no pace_min_per_mile key at all
+    assert resp.status_code == 200
+
+
 def test_generate_route_translates_service_error_to_422(client, monkeypatch):
     import app.api.routes as routes_module
     from app.services.route_service import RouteGenerationError

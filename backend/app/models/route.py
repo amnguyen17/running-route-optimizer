@@ -37,6 +37,11 @@ class RouteRequest(BaseModel):
         description="Optional hard cap on elevation gain. Defaults to a generous "
         "multiple of desired_elevation_gain_ft if not supplied.",
     )
+    pace_min_per_mile: float | None = Field(
+        default=None,
+        description="User's typical pace in minutes per mile, used to personalize "
+        "estimated_time_minutes. Omit to fall back to settings.default_pace_min_per_mile.",
+    )
     route_type: RouteType = RouteType.loop
     algorithm: Algorithm = Algorithm.astar
 
@@ -56,6 +61,20 @@ class RouteRequest(BaseModel):
         if v > settings.max_elevation_gain_ft:
             raise ValueError(
                 f"desired_elevation_gain_ft must not exceed {settings.max_elevation_gain_ft}"
+            )
+        return v
+
+    @field_validator("pace_min_per_mile")
+    @classmethod
+    def _pace_within_bounds(cls, v: float | None) -> float | None:
+        # None means "not supplied" -- generate_route falls back to the
+        # configured default pace rather than treating this as an error.
+        if v is None:
+            return v
+        if not (settings.min_pace_min_per_mile <= v <= settings.max_pace_min_per_mile):
+            raise ValueError(
+                f"pace_min_per_mile must be between {settings.min_pace_min_per_mile} "
+                f"and {settings.max_pace_min_per_mile} minutes per mile"
             )
         return v
 

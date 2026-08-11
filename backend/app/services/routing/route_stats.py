@@ -21,14 +21,23 @@ class RouteStats:
     difficulty: float
 
 
-def compute_route_stats(graph: nx.Graph, node_path: list) -> RouteStats:
+def compute_route_stats(
+    graph: nx.Graph, node_path: list, pace_min_per_mile: float | None = None
+) -> RouteStats:
+    """
+    `pace_min_per_mile` is the user's own reported pace; pass None to fall
+    back to settings.default_pace_min_per_mile (e.g. when the request
+    didn't specify one).
+    """
+    pace = pace_min_per_mile if pace_min_per_mile is not None else settings.default_pace_min_per_mile
+
     if len(node_path) < 2:
         return RouteStats(
             distance_miles=0.0,
             elevation_gain_ft=0.0,
             elevation_loss_ft=0.0,
             estimated_time_minutes=0.0,
-            average_pace_min_per_mile=settings.default_pace_min_per_mile,
+            average_pace_min_per_mile=pace,
             difficulty=0.0,
         )
 
@@ -46,17 +55,19 @@ def compute_route_stats(graph: nx.Graph, node_path: list) -> RouteStats:
     elevation_gain_ft = meters_to_feet(total_gain_m)
     elevation_loss_ft = meters_to_feet(total_loss_m)
 
-    # Estimated time: configurable flat pace + a linear penalty for
-    # elevation gain. This is explicitly a non-personalized estimate
-    # (see README "Limitations") using settings.default_pace_min_per_mile.
-    base_time = distance_miles * settings.default_pace_min_per_mile
+    # Estimated time: the user's own pace (flat-ground assumption) plus a
+    # linear penalty for elevation gain. Elevation has always only ever
+    # adjusted this additive penalty term, never the base pace itself --
+    # preserved as-is here, just with a personalized base instead of a
+    # single fixed assumption for every user.
+    base_time = distance_miles * pace
     elevation_time_penalty = (
         elevation_gain_ft / 100.0
     ) * settings.elevation_time_penalty_min_per_100ft
     estimated_time_minutes = base_time + elevation_time_penalty
 
     average_pace_min_per_mile = (
-        estimated_time_minutes / distance_miles if distance_miles > 0 else settings.default_pace_min_per_mile
+        estimated_time_minutes / distance_miles if distance_miles > 0 else pace
     )
 
     difficulty = _compute_difficulty(distance_miles, elevation_gain_ft)
