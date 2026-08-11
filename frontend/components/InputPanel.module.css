@@ -49,6 +49,8 @@
   border-radius: var(--radius-sm);
   background: var(--color-paper);
   color: var(--color-ink);
+  width: 100%;
+  min-width: 0;
 }
 
 .input:focus {

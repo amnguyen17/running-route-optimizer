@@ -16,6 +16,11 @@
   --color-moss-soft: #cfe3d6;
   --color-clay: #b8492f;
   --color-clay-soft: #f3d9d0;
+  /* Always-dark "instrument panel" surface (StatsReadout) -- deliberately
+     NOT the same token as --color-ink (which flips to a light color in
+     dark mode for body text), so that panel stays a dark accent in both
+     themes instead of inverting to an unreadable light-on-light box. */
+  --color-panel-dark: #1c2620;
 
   --font-display: "Space Grotesk", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
@@ -24,6 +29,41 @@
   --radius-md: 8px;
 
   color-scheme: light;
+}
+
+/* System preference, when the user hasn't made an explicit choice via the
+   toggle (data-theme unset or explicitly "light" wins over this). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-paper: #141815;
+    --color-paper-raised: #1c231e;
+    --color-ink: #eef1ec;
+    --color-ink-soft: #9db3a5;
+    --color-line: #333f37;
+    --color-amber: #e6a34a;
+    --color-amber-soft: #4a3a1c;
+    --color-moss: #8fc3a4;
+    --color-moss-soft: #223a2c;
+    --color-panel-dark: #0d1210;
+
+    color-scheme: dark;
+  }
+}
+
+/* Explicit toggle choice always wins over system preference. */
+:root[data-theme="dark"] {
+  --color-paper: #141815;
+  --color-paper-raised: #1c231e;
+  --color-ink: #eef1ec;
+  --color-ink-soft: #9db3a5;
+  --color-line: #333f37;
+  --color-amber: #e6a34a;
+  --color-amber-soft: #4a3a1c;
+  --color-moss: #8fc3a4;
+  --color-moss-soft: #223a2c;
+  --color-panel-dark: #0d1210;
+
+  color-scheme: dark;
 }
 
 * {
@@ -37,6 +77,7 @@ body {
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-display);
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 a {

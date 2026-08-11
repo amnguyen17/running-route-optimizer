@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useState } from "react";
 import InputPanel from "@/components/InputPanel";
 import StatsReadout from "@/components/StatsReadout";
+import ThemeToggle from "@/components/ThemeToggle";
 import { ApiRequestError, generateRoute } from "@/lib/api";
 import type { GeneratedRoute, RouteRequest } from "@/types/route";
 import styles from "./page.module.css";
@@ -55,6 +56,7 @@ export default function Home() {
             Running Route <span className={styles.brandAccent}>Optimizer</span>
           </span>
           <span className={styles.tagline}>OSM graph · Dijkstra / A* · elevation-aware scoring</span>
+          <ThemeToggle />
         </div>
       </header>
 
