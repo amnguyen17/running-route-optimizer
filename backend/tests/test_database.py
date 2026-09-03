@@ -84,3 +84,36 @@ def test_delete_route_removes_record_and_points(db_session):
 
 def test_delete_nonexistent_route_returns_false(db_session):
     assert crud.delete_route(db_session, 12345) is False
+
+
+def test_new_route_is_not_favorite_by_default(db_session):
+    saved = crud.save_route(db_session, _sample_request(), _sample_route())
+    assert saved.is_favorite is False
+
+
+def test_set_favorite_marks_route_as_favorite(db_session):
+    saved = crud.save_route(db_session, _sample_request(), _sample_route())
+    updated = crud.set_favorite(db_session, saved.id, True)
+    assert updated is not None
+    assert updated.is_favorite is True
+
+
+def test_set_favorite_can_unmark(db_session):
+    saved = crud.save_route(db_session, _sample_request(), _sample_route())
+    crud.set_favorite(db_session, saved.id, True)
+    updated = crud.set_favorite(db_session, saved.id, False)
+    assert updated.is_favorite is False
+
+
+def test_set_favorite_returns_none_for_missing_id(db_session):
+    assert crud.set_favorite(db_session, 99999, True) is None
+
+
+def test_list_routes_favorites_only_filters_non_favorites(db_session):
+    favorite = crud.save_route(db_session, _sample_request(), _sample_route())
+    crud.save_route(db_session, _sample_request(), _sample_route())
+    crud.set_favorite(db_session, favorite.id, True)
+
+    routes = crud.list_routes(db_session, favorites_only=True)
+    assert len(routes) == 1
+    assert routes[0].id == favorite.id

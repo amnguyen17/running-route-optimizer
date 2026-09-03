@@ -1,12 +1,16 @@
 import type { GeneratedRoute } from "@/types/route";
 import styles from "./StatsReadout.module.css";
 
+export type SaveState = "idle" | "saving" | "saved" | "error";
+
 interface Props {
   route: GeneratedRoute | null;
   paceMinPerMile: number;
+  onSave?: () => void;
+  saveState?: SaveState;
 }
 
-export default function StatsReadout({ route, paceMinPerMile }: Props) {
+export default function StatsReadout({ route, paceMinPerMile, onSave, saveState = "idle" }: Props) {
   if (!route) {
     return (
       <div className={styles.emptyState}>
@@ -19,6 +23,16 @@ export default function StatsReadout({ route, paceMinPerMile }: Props) {
 
   return (
     <div className={styles.readout}>
+      {onSave && (
+        <button
+          type="button"
+          className={styles.saveButton}
+          onClick={onSave}
+          disabled={saveState === "saving" || saveState === "saved"}
+        >
+          {saveButtonLabel(saveState)}
+        </button>
+      )}
       {!route.elevation_available && (
         <div className={styles.emptyState}>
           Elevation data was unavailable for this route — gain/loss/difficulty below are not
@@ -59,6 +73,19 @@ function Stat({ label, value, unit }: { label: string; value: string | number; u
       </span>
     </div>
   );
+}
+
+function saveButtonLabel(saveState: SaveState): string {
+  switch (saveState) {
+    case "saving":
+      return "Saving…";
+    case "saved":
+      return "Saved to log ✓";
+    case "error":
+      return "Save failed — retry";
+    default:
+      return "☆ Save to log";
+  }
 }
 
 function formatMinutes(totalMinutes: number): string {

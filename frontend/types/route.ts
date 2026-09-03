@@ -48,6 +48,11 @@ export interface SavedRouteSummary {
   estimated_time_minutes: number;
   difficulty: number;
   score: number;
+  is_favorite: boolean;
+}
+
+export interface SavedRouteDetail extends SavedRouteSummary {
+  route: RouteCoordinate[];
 }
 
 export interface ApiError {

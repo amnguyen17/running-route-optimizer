@@ -49,14 +49,13 @@ def get_route(db: Session, route_id: int) -> RouteRecord | None:
     return db.get(RouteRecord, route_id)
 
 
-def list_routes(db: Session, limit: int = 50, offset: int = 0) -> list[RouteRecord]:
-    return (
-        db.query(RouteRecord)
-        .order_by(RouteRecord.created_at.desc())
-        .offset(offset)
-        .limit(limit)
-        .all()
-    )
+def list_routes(
+    db: Session, limit: int = 50, offset: int = 0, favorites_only: bool = False
+) -> list[RouteRecord]:
+    query = db.query(RouteRecord)
+    if favorites_only:
+        query = query.filter(RouteRecord.is_favorite.is_(True))
+    return query.order_by(RouteRecord.created_at.desc()).offset(offset).limit(limit).all()
 
 
 def delete_route(db: Session, route_id: int) -> bool:
@@ -66,3 +65,13 @@ def delete_route(db: Session, route_id: int) -> bool:
     db.delete(record)
     db.commit()
     return True
+
+
+def set_favorite(db: Session, route_id: int, is_favorite: bool) -> RouteRecord | None:
+    record = db.get(RouteRecord, route_id)
+    if record is None:
+        return None
+    record.is_favorite = is_favorite
+    db.commit()
+    db.refresh(record)
+    return record

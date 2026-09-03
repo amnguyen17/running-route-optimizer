@@ -402,22 +402,3 @@ This is an MVP, not a production system. Specifically:
 - Real-world benchmark numbers against live OSM data for a few named
   cities.
 
-## Files to understand before using this on your resume
-
-If you're going to claim this project, make sure you can explain these
-without notes:
-
-1. `backend/app/services/routing/algorithms.py` — the actual Dijkstra/A*
-   implementations; be ready to explain g/h/f and why the heuristic is
-   admissible.
-2. `backend/app/services/optimization/loop_generator.py` — how candidate
-   loops are actually generated (and that it's a heuristic, not exact).
-3. `backend/app/services/optimization/scoring.py` — the scoring formula
-   and what each weight does.
-4. `backend/app/services/ingestion/osm_graph.py` — how the OSM graph is
-   downloaded, converted, and cached.
-5. `backend/app/services/route_service.py` — how all the pieces above are
-   wired together end-to-end for a single request.
-6. `backend/app/config.py` — every tunable constant in the system and why
-   it exists.
-7. `docs/ALGORITHMS.md` and `docs/OPTIMIZATION.md` — the "why" behind (1)–(3).

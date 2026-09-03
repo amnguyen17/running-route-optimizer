@@ -196,3 +196,60 @@ def test_saved_routes_full_crud_cycle(client, monkeypatch):
 def test_get_nonexistent_saved_route_returns_404(client):
     resp = client.get("/api/saved-routes/9999")
     assert resp.status_code == 404
+
+
+def test_saved_route_is_not_favorite_by_default(client, monkeypatch):
+    import app.api.saved_routes as saved_routes_module
+
+    monkeypatch.setattr(saved_routes_module, "generate_route", lambda req: _fake_generated_route())
+
+    create_resp = client.post("/api/saved-routes", json=VALID_PAYLOAD)
+    assert create_resp.json()["is_favorite"] is False
+
+
+def test_favorite_a_saved_route(client, monkeypatch):
+    import app.api.saved_routes as saved_routes_module
+
+    monkeypatch.setattr(saved_routes_module, "generate_route", lambda req: _fake_generated_route())
+
+    route_id = client.post("/api/saved-routes", json=VALID_PAYLOAD).json()["id"]
+
+    patch_resp = client.patch(f"/api/saved-routes/{route_id}/favorite", json={"is_favorite": True})
+    assert patch_resp.status_code == 200
+    assert patch_resp.json()["is_favorite"] is True
+
+    get_resp = client.get(f"/api/saved-routes/{route_id}")
+    assert get_resp.json()["is_favorite"] is True
+
+
+def test_unfavorite_a_saved_route(client, monkeypatch):
+    import app.api.saved_routes as saved_routes_module
+
+    monkeypatch.setattr(saved_routes_module, "generate_route", lambda req: _fake_generated_route())
+
+    route_id = client.post("/api/saved-routes", json=VALID_PAYLOAD).json()["id"]
+    client.patch(f"/api/saved-routes/{route_id}/favorite", json={"is_favorite": True})
+
+    patch_resp = client.patch(f"/api/saved-routes/{route_id}/favorite", json={"is_favorite": False})
+    assert patch_resp.json()["is_favorite"] is False
+
+
+def test_favorite_nonexistent_route_returns_404(client):
+    resp = client.patch("/api/saved-routes/9999/favorite", json={"is_favorite": True})
+    assert resp.status_code == 404
+
+
+def test_list_saved_routes_favorites_only(client, monkeypatch):
+    import app.api.saved_routes as saved_routes_module
+
+    monkeypatch.setattr(saved_routes_module, "generate_route", lambda req: _fake_generated_route())
+
+    first_id = client.post("/api/saved-routes", json=VALID_PAYLOAD).json()["id"]
+    client.post("/api/saved-routes", json=VALID_PAYLOAD)
+    client.patch(f"/api/saved-routes/{first_id}/favorite", json={"is_favorite": True})
+
+    resp = client.get("/api/saved-routes", params={"favorites_only": True})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert len(body) == 1
+    assert body[0]["id"] == first_id

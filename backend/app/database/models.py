@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import datetime as dt
 
-from sqlalchemy import Float, ForeignKey, Integer, String, DateTime
+from sqlalchemy import Boolean, Float, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.session import Base
@@ -51,6 +51,8 @@ class RouteRecord(Base):
     estimated_time_minutes: Mapped[float] = mapped_column(Float, nullable=False)
     difficulty: Mapped[float] = mapped_column(Float, nullable=False)
     score: Mapped[float] = mapped_column(Float, nullable=False)
+
+    is_favorite: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     points: Mapped[list["RoutePoint"]] = relationship(
         back_populates="route", cascade="all, delete-orphan", order_by="RoutePoint.sequence"

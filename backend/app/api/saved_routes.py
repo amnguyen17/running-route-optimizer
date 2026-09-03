@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import crud
 from app.database.session import get_db
 from app.models.route import (
+    FavoriteUpdate,
     GeneratedRoute,
     RouteCoordinate,
     RouteRequest,
@@ -28,8 +29,10 @@ def create_saved_route(request: RouteRequest, db: Session = Depends(get_db)) -> 
 
 
 @router.get("", response_model=list[SavedRouteSummary])
-def list_saved_routes(limit: int = 50, offset: int = 0, db: Session = Depends(get_db)):
-    records = crud.list_routes(db, limit=limit, offset=offset)
+def list_saved_routes(
+    limit: int = 50, offset: int = 0, favorites_only: bool = False, db: Session = Depends(get_db)
+):
+    records = crud.list_routes(db, limit=limit, offset=offset, favorites_only=favorites_only)
     return [SavedRouteSummary.model_validate(r) for r in records]
 
 
@@ -48,6 +51,16 @@ def delete_saved_route(route_id: int, db: Session = Depends(get_db)) -> None:
         raise HTTPException(status_code=404, detail=f"Saved route {route_id} not found.")
 
 
+@router.patch("/{route_id}/favorite", response_model=SavedRouteSummary)
+def update_favorite(
+    route_id: int, body: FavoriteUpdate, db: Session = Depends(get_db)
+) -> SavedRouteSummary:
+    record = crud.set_favorite(db, route_id, body.is_favorite)
+    if record is None:
+        raise HTTPException(status_code=404, detail=f"Saved route {route_id} not found.")
+    return SavedRouteSummary.model_validate(record)
+
+
 def _to_detail(record) -> SavedRouteDetail:
     return SavedRouteDetail(
         id=record.id,
@@ -62,6 +75,7 @@ def _to_detail(record) -> SavedRouteDetail:
         estimated_time_minutes=record.estimated_time_minutes,
         difficulty=record.difficulty,
         score=record.score,
+        is_favorite=record.is_favorite,
         route=[
             RouteCoordinate(latitude=p.latitude, longitude=p.longitude, elevation_m=p.elevation_m)
             for p in record.points

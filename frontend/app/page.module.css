@@ -42,6 +42,24 @@
   color: var(--color-ink-soft);
 }
 
+.logButton {
+  margin-left: auto;
+  padding: 7px 14px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-paper-raised);
+  color: var(--color-ink);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.12s ease, color 0.12s ease;
+}
+
+.logButton:hover {
+  color: var(--color-amber);
+  border-color: var(--color-amber);
+}
+
 .main {
   flex: 1;
   display: grid;

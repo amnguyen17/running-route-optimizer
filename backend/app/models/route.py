@@ -124,6 +124,7 @@ class SavedRouteSummary(BaseModel):
     estimated_time_minutes: float
     difficulty: float
     score: float
+    is_favorite: bool = False
 
     model_config = {"from_attributes": True}
 
@@ -137,3 +138,9 @@ class SavedRouteSummary(BaseModel):
 
 class SavedRouteDetail(SavedRouteSummary):
     route: list[RouteCoordinate]
+
+
+class FavoriteUpdate(BaseModel):
+    """Body of PATCH /api/saved-routes/{route_id}/favorite."""
+
+    is_favorite: bool

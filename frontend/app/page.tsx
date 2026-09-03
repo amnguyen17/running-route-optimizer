@@ -3,10 +3,11 @@
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import InputPanel from "@/components/InputPanel";
-import StatsReadout from "@/components/StatsReadout";
+import RouteLog from "@/components/RouteLog";
+import StatsReadout, { type SaveState } from "@/components/StatsReadout";
 import ThemeToggle from "@/components/ThemeToggle";
-import { ApiRequestError, generateRoute } from "@/lib/api";
-import type { GeneratedRoute, RouteRequest } from "@/types/route";
+import { ApiRequestError, generateRoute, saveRoute } from "@/lib/api";
+import type { GeneratedRoute, RouteRequest, SavedRouteDetail } from "@/types/route";
 import styles from "./page.module.css";
 
 // Leaflet touches `window` at import time, so the map must be loaded
@@ -24,6 +25,10 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [startPoint, setStartPoint] = useState<[number, number]>(DEFAULT_CENTER);
   const [paceUsed, setPaceUsed] = useState(10);
+  const [lastRequest, setLastRequest] = useState<RouteRequest | null>(null);
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [isLogOpen, setIsLogOpen] = useState(false);
+  const [logRefreshToken, setLogRefreshToken] = useState(0);
 
   async function handleSubmit(request: RouteRequest) {
     setIsLoading(true);
@@ -32,6 +37,8 @@ export default function Home() {
       const result = await generateRoute(request);
       setRoute(result);
       setPaceUsed(request.pace_min_per_mile);
+      setLastRequest(request);
+      setSaveState("idle");
     } catch (err) {
       if (err instanceof ApiRequestError) {
         setErrorMessage(err.message);
@@ -41,6 +48,28 @@ export default function Home() {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  async function handleSaveRoute() {
+    if (!lastRequest) return;
+    setSaveState("saving");
+    try {
+      await saveRoute(lastRequest);
+      setSaveState("saved");
+      setLogRefreshToken((t) => t + 1);
+    } catch {
+      setSaveState("error");
+    }
+  }
+
+  function handleLoadRoute(detail: SavedRouteDetail) {
+    const loaded = savedRouteToGeneratedRoute(detail);
+    setRoute(loaded);
+    setStartPoint([loaded.start_latitude, loaded.start_longitude]);
+    setPaceUsed(loaded.average_pace_min_per_mile);
+    setLastRequest(null);
+    setSaveState("saved");
+    setErrorMessage(null);
   }
 
   function handleSelectStart(lat: number, lon: number) {
@@ -56,6 +85,9 @@ export default function Home() {
             Running Route <span className={styles.brandAccent}>Optimizer</span>
           </span>
           <span className={styles.tagline}>OSM graph · Dijkstra / A* · elevation-aware scoring</span>
+          <button type="button" className={styles.logButton} onClick={() => setIsLogOpen(true)}>
+            Route Log
+          </button>
           <ThemeToggle />
         </div>
       </header>
@@ -70,7 +102,12 @@ export default function Home() {
         />
 
         <div className={styles.mapColumn}>
-          <StatsReadout route={route} paceMinPerMile={paceUsed} />
+          <StatsReadout
+            route={route}
+            paceMinPerMile={paceUsed}
+            onSave={lastRequest ? handleSaveRoute : undefined}
+            saveState={saveState}
+          />
           <div className={styles.mapArea}>
             <RouteMap
               route={route}
@@ -81,8 +118,37 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      <RouteLog
+        isOpen={isLogOpen}
+        onClose={() => setIsLogOpen(false)}
+        onLoadRoute={handleLoadRoute}
+        refreshToken={logRefreshToken}
+      />
     </div>
   );
+}
+
+function savedRouteToGeneratedRoute(detail: SavedRouteDetail): GeneratedRoute {
+  const first = detail.route[0];
+  const last = detail.route[detail.route.length - 1];
+  return {
+    route: detail.route,
+    distance_miles: detail.distance_miles,
+    elevation_gain_ft: detail.elevation_gain_ft,
+    elevation_loss_ft: detail.elevation_loss_ft,
+    estimated_time_minutes: detail.estimated_time_minutes,
+    average_pace_min_per_mile:
+      detail.distance_miles > 0 ? detail.estimated_time_minutes / detail.distance_miles : 0,
+    difficulty: detail.difficulty,
+    algorithm: detail.algorithm,
+    score: detail.score,
+    start_latitude: first?.latitude ?? 0,
+    start_longitude: first?.longitude ?? 0,
+    end_latitude: last?.latitude ?? 0,
+    end_longitude: last?.longitude ?? 0,
+    elevation_available: true,
+  };
 }
 
 function ContourBackground() {
